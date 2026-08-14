@@ -13,6 +13,10 @@ main に push → GitHub Actions がビルド → GitHub Pages に公開 → ス
 
 APK をインストールする必要はありません。**ブラウザで開くだけ**で最新版が見られます。
 
+> 💡 [docs/02](02_環境構築.md) の通りにリポジトリを作った場合、Actions の有効化（Fork直後は無効）は
+> 既に済んでいるはずです。まだの場合は、リポジトリの **「Actions」タブ** を開いて
+> **「I understand my workflows, go ahead and enable them」** をクリックしてから以下に進んでください。
+
 ---
 
 ## 設定手順
@@ -122,6 +126,7 @@ https://<代表者のGitHubユーザー名>.github.io/<リポジトリ名>/
 
 | 症状 | 原因と対処 |
 |---|---|
+| push しても Actions タブに何も表示されない | Fork直後で Actions が無効化されたまま。「I understand my workflows, go ahead and enable them」をクリック |
 | Actions が赤いバツで止まる | Secret の Name を打ち間違えていないか確認 |
 | ビルドは成功したが URL を開いても真っ白 | Settings → Pages の Source が「GitHub Actions」になっているか確認 |
 | 前のバージョンのまま反映されない | ブラウザのキャッシュが残っている。スマホなら一度タブを閉じて開き直す、PCなら再読み込み（Cmd/Ctrl + Shift + R） |
