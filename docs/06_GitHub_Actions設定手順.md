@@ -13,15 +13,20 @@ main に push → GitHub Actions がビルド → GitHub Pages に公開 → ス
 
 APK をインストールする必要はありません。**ブラウザで開くだけ**で最新版が見られます。
 
-> 💡 [docs/02](02_環境構築.md) の通りにリポジトリを作った場合、Actions の有効化（Fork直後は無効）は
-> 既に済んでいるはずです。まだの場合は、リポジトリの **「Actions」タブ** を開いて
-> **「I understand my workflows, go ahead and enable them」** をクリックしてから以下に進んでください。
-
 ---
 
 ## 設定手順
 
-### 1. GitHub リポジトリの Secrets を登録する
+### 1. GitHub Actions を有効にする
+
+このリポジトリは Fork（コピー）で作られているため、**GitHub Actions が最初は無効**になっています
+（安全のためのGitHubの仕様です）。
+
+1. リポジトリの上部タブから **「Actions」** を開く
+2. 黄色い帯で「Workflows aren't being run on this forked repository」と出るので、
+   **「I understand my workflows, go ahead and enable them」** をクリック
+
+### 2. GitHub リポジトリの Secrets を登録する
 
 **設定場所の開き方：**
 
@@ -48,14 +53,14 @@ APK をインストールする必要はありません。**ブラウザで開�
 
 2つ登録し終わったら、Secrets 一覧に2つ並んでいることを確認してください。
 
-### 2. GitHub Pages を有効にする
+### 3. GitHub Pages を有効にする
 
 1. リポジトリの **「Settings」** → 左メニューの **「Pages」** をクリック
 2. **「Build and deployment」** の **「Source」** を **「GitHub Actions」** に変更する
 
 これだけです。
 
-### 3. テスト push してビルドを走らせる
+### 4. テスト push してビルドを走らせる
 
 グループの誰か1人がやればOKです。
 
@@ -88,7 +93,7 @@ push できたら、**GitHub のリポジトリページ** → 上のタブか�
 > ❌ 赤いバツ（失敗）になったら → クリックしてエラーログを確認。
 > 一番多い原因は **Secret の Name の打ち間違い**、次に多いのが **Pages の Source 未設定**です。
 
-### 4. URL を確認する
+### 5. URL を確認する
 
 ビルドが完了（緑のチェック ✅）したら、以下のどちらかで URL が分かります。
 
@@ -126,7 +131,7 @@ https://<代表者のGitHubユーザー名>.github.io/<リポジトリ名>/
 
 | 症状 | 原因と対処 |
 |---|---|
-| push しても Actions タブに何も表示されない | Fork直後で Actions が無効化されたまま。「I understand my workflows, go ahead and enable them」をクリック |
+| push しても Actions タブに何も表示されない | 「1. GitHub Actions を有効にする」ができていない。「I understand my workflows, go ahead and enable them」をクリック |
 | Actions が赤いバツで止まる | Secret の Name を打ち間違えていないか確認 |
 | ビルドは成功したが URL を開いても真っ白 | Settings → Pages の Source が「GitHub Actions」になっているか確認 |
 | 前のバージョンのまま反映されない | ブラウザのキャッシュが残っている。スマホなら一度タブを閉じて開き直す、PCなら再読み込み（Cmd/Ctrl + Shift + R） |
