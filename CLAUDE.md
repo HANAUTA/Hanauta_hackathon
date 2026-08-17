@@ -25,6 +25,7 @@
 - [GitHub Actions 設定手順](docs/06_GitHub_Actions設定手順.md) … スマホ自動配布の設定
 - [コーディング規約](docs/07_コーディング規約.md) … フォルダ構成・命名・コメント規則
 - [データベース設計](docs/08_データベース設計.md) … 既存テーブルの構造
+- [Antigravity CLI 利用ガイド](docs/09_Antigravity_CLI利用ガイド.md) … 無料AIツール（Antigravity CLI）の使い方
 
 ---
 
