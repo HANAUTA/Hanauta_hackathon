@@ -39,6 +39,7 @@
 | `lib/core/video_processor*.dart` | Web/モバイルの動画変換。プラットフォーム分岐が複雑 |
 | `lib/core/cached_video*.dart` | 動画キャッシュ。プラットフォーム分岐あり |
 | `lib/core/app_platform.dart` | プラットフォーム判定。動画の回転補正に関わる |
+| `lib/core/analytics.dart` | 運営用の計測基盤。発表当日にSupabaseの`analytics_events`を分析画面で使う |
 | `lib/features/post/camera_screen.dart` | カメラ撮影画面。Web/モバイル両対応で繊細 |
 | `lib/features/post/recorded_video_view.dart` | 動画再生の回転補正。プラットフォーム依存のロジック |
 | `web/camera_helper.js` | Web カメラのパーミッション制御 |
@@ -48,6 +49,18 @@
 | `main.dart` | アプリのエントリーポイント。初期化順序が重要 |
 
 > 上記以外の `lib/features/` や `lib/models/` は自由に編集・追加してOK。
+
+## 計測イベント（`Analytics.log(...)`）について
+
+`lib/features/` 内のコードには、発表当日の分析画面用に `Analytics.log(...)` の呼び出しが
+いくつか埋め込まれている（`post_provider.dart` の `video_posted`、
+`group_detail_screen.dart` の `video_played`、`group_provider.dart` の
+`group_created` / `group_joined` など。目印として直前に `⚠️ 計測用イベント` という
+コメントが付いている）。`main.dart` にも `app_opened` / `app_closed` がある。
+
+- リファクタリングや機能修正のついでに、この呼び出し行だけを削除しないこと
+- その呼び出しが属する機能（ボタン・処理）ごと削除する場合は、一緒に消してOK
+- 新しい機能を追加する分には `Analytics.log('イベント名', {...})` を自由に増やしてよい
 
 ---
 

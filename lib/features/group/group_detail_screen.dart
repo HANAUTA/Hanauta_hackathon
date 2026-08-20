@@ -323,6 +323,7 @@ class _MemberPostCardState extends State<_MemberPostCard> {
         return;
       }
       setState(() => _initialized = true);
+      // ⚠️ 計測用イベント。この行だけを削除しないこと（再生機能ごと消すのはOK）
       Analytics.log('video_played', {'post_id': widget.post.postId});
       await controller.play();
     } catch (_) {

@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'analytics.dart';
 import '../features/auth/splash_screen.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/profile_screen.dart';
@@ -62,3 +63,20 @@ final router = GoRouter(
     ),
   ],
 );
+
+// ⚠️ 計測用。画面の表示を自動で記録する（main.dartから起動時に一度だけ呼ぶ）。
+// 上のroutesに追加したルートはそのまま計測対象になるので、画面ごとに書き足す必要はない。
+String? _lastScreen;
+
+void startScreenTracking() {
+  void handler() {
+    // fullPath は '/group/:id' のようなパターン。IDが入らないので集計しやすい。
+    final screen = router.routerDelegate.currentConfiguration.fullPath;
+    if (screen.isEmpty || screen == _lastScreen) return;
+    _lastScreen = screen;
+    Analytics.log('screen_viewed', {'screen': screen});
+  }
+
+  router.routerDelegate.addListener(handler);
+  handler();
+}

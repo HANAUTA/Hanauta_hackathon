@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/analytics.dart';
 import 'core/router.dart';
 import 'core/supabase_client.dart';
 
@@ -50,8 +51,34 @@ class _StartupErrorApp extends StatelessWidget {
 }
 
 // アプリのルートWidget。
-class HanalogApp extends StatelessWidget {
+class HanalogApp extends StatefulWidget {
   const HanalogApp({super.key});
+
+  @override
+  State<HanalogApp> createState() => _HanalogAppState();
+}
+
+class _HanalogAppState extends State<HanalogApp> {
+  late final AppLifecycleListener _lifecycleListener;
+
+  @override
+  void initState() {
+    super.initState();
+    // ⚠️ 計測用イベント。この2行だけを削除しないこと（起動回数・離脱回数の計測に使う）
+    Analytics.log('app_opened');
+    startScreenTracking();
+    // onHide はWeb（タブ非表示）でもモバイル（バックグラウンド移行）でも発火する共通の合図。
+    // タスクキル等は送信前にプロセスが落ちるため、あくまで取れる範囲での記録になる。
+    _lifecycleListener = AppLifecycleListener(
+      onHide: () => Analytics.log('app_closed'),
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycleListener.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

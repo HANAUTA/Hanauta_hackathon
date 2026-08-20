@@ -108,6 +108,7 @@ class GroupService {
       'group_id': group.id,
       'user_id': userId,
     });
+    // ⚠️ 計測用イベント。この行だけを削除しないこと（createGroup機能ごと消すのはOK）
     Analytics.log('group_created', {'group_id': group.id});
     return group;
   }
@@ -141,6 +142,7 @@ class GroupService {
       'group_id': group.id,
       'user_id': userId,
     });
+    // ⚠️ 計測用イベント。この行だけを削除しないこと（joinGroup機能ごと消すのはOK）
     Analytics.log('group_joined', {'group_id': group.id});
     return group;
   }

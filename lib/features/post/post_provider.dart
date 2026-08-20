@@ -174,6 +174,7 @@ class PostController {
       debugPrint('[post] ✅ post_shares insert 完了');
     }
 
+    // ⚠️ 計測用イベント。この行だけを削除しないこと（send()機能ごと消すのはOK）
     Analytics.log('video_posted', {
       'post_id': postId,
       'group_count': groupIds.length,
