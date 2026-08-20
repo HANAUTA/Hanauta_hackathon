@@ -1,4 +1,4 @@
-// プロフィール入力画面。初回ログイン時に名前を登録する。
+// 初回登録画面。ログイン後、まだ users に行がない人に名前を入力してもらう。
 // users テーブルに id=Authユーザー で insert し、完了後ホームへ遷移する。
 
 import 'package:flutter/material.dart';
@@ -8,14 +8,14 @@ import 'package:go_router/go_router.dart';
 import '../../core/supabase_client.dart';
 import 'auth_provider.dart';
 
-class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key});
+class ProfileSetupScreen extends ConsumerStatefulWidget {
+  const ProfileSetupScreen({super.key});
 
   @override
-  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   bool _isSaving = false;
