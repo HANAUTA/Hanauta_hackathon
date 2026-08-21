@@ -62,6 +62,11 @@ class GroupPostsArgs {
   int get hashCode => Object.hash(groupId, sharedDate, hour);
 }
 
+// オーナーのグループ脱退を拒否する例外。
+class GroupOwnerCannotLeaveException implements Exception {
+  const GroupOwnerCannotLeaveException();
+}
+
 // グループ関連のSupabase操作をまとめたサービス。
 class GroupService {
   static const _codeChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -149,13 +154,31 @@ class GroupService {
     return group;
   }
 
-  // グループから脱退する。オーナー移譲を含む処理はSupabase RPCで一括実行する。
+  // グループから脱退する。オーナーは脱退できず、一般メンバーは本人の行だけ削除する。
   Future<void> leaveGroup(String groupId) async {
-    if (supabase.auth.currentUser == null) {
-      throw Exception('ログインしていません');
+    final userId = _currentUserId;
+
+    final group = await supabase
+        .from('groups')
+        .select('owner_id')
+        .eq('id', groupId)
+        .maybeSingle();
+    if (group == null) {
+      throw Exception('グループが見つかりません');
+    }
+    if (group['owner_id'] == userId) {
+      throw const GroupOwnerCannotLeaveException();
     }
 
-    await supabase.rpc('leave_group', params: {'target_group_id': groupId});
+    final deleted = await supabase
+        .from('group_members')
+        .delete()
+        .eq('group_id', groupId)
+        .eq('user_id', userId)
+        .select('id');
+    if (deleted.isEmpty) {
+      throw Exception('このグループのメンバーではありません');
+    }
   }
 
   Future<Group> fetchGroup(String groupId) async {

@@ -5,7 +5,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'package:video_player/video_player.dart';
 
 import '../../core/analytics.dart';
@@ -313,10 +312,8 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
   }
 
   String _leaveErrorMessage(Object error) {
-    if (error is PostgrestException &&
-        (error.code == 'P0001' ||
-            error.details.toString() == 'last_owner_cannot_leave')) {
-      return '他の参加者がいないため脱退できません';
+    if (error is GroupOwnerCannotLeaveException) {
+      return 'オーナーは脱退できません';
     }
     return 'グループの脱退に失敗しました';
   }
