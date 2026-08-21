@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../core/cached_video.dart';
+import '../../core/widgets/heart_animation_overlay.dart';
 import '../../models/group.dart';
 import '../../models/post.dart';
 import '../auth/auth_provider.dart';
@@ -112,6 +113,14 @@ class HomeScreen extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('プロフィール'),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                context.push('/profile');
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('ログアウト'),
@@ -342,7 +351,7 @@ class _VlogFeedState extends State<_VlogFeed> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: GestureDetector(
+        child: HeartAnimationOverlay(
           onTap: _togglePlayPause,
           child: AspectRatio(
             // ホームでは横長のスリムなカードで表示する（撮影は縦長・横向き）。

@@ -62,3 +62,22 @@ Future<void> createProfile({
 }) async {
   await supabase.from('users').insert({'id': userId, 'name': name});
 }
+
+// 自分のプロフィール（AppUser）を取得する。
+Future<Map<String, dynamic>?> getProfile(String userId) async {
+  final row = await supabase
+      .from('users')
+      .select()
+      .eq('id', userId)
+      .maybeSingle();
+  return row;
+}
+
+// プロフィール（名前）を更新する。
+Future<void> updateProfile({
+  required String userId,
+  required String name,
+}) async {
+  await supabase.from('users').update({'name': name}).eq('id', userId);
+}
+

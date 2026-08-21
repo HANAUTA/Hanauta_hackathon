@@ -8,6 +8,7 @@ import 'analytics.dart';
 import '../features/auth/splash_screen.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/profile_setup_screen.dart';
+import '../features/auth/profile_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/group/group_create_screen.dart';
 import '../features/group/group_join_screen.dart';
@@ -26,7 +27,12 @@ final router = GoRouter(
       path: '/profile/setup',
       builder: (context, state) => const ProfileSetupScreen(),
     ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const ProfileScreen(),
+    ),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+
     GoRoute(
       path: '/group/create',
       builder: (context, state) => const GroupCreateScreen(),
