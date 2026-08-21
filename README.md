@@ -69,3 +69,4 @@
 - データベースの構造 → [データベース設計](docs/08_データベース設計.md)
 - スマホ自動配布の設定 → [GitHub Actions 設定手順](docs/06_GitHub_Actions設定手順.md)
 - AIコーディングツール（無料版）の使い方 → [Antigravity CLI 利用ガイド](docs/09_Antigravity_CLI利用ガイド.md)
+
