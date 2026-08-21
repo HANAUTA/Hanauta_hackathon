@@ -76,8 +76,10 @@ class GroupService {
 
   String _generateInviteCode() {
     final rand = Random.secure();
-    return List.generate(6, (_) => _codeChars[rand.nextInt(_codeChars.length)])
-        .join();
+    return List.generate(
+      6,
+      (_) => _codeChars[rand.nextInt(_codeChars.length)],
+    ).join();
   }
 
   // グループを作成し、作成者を自動的にメンバーへ追加する。
@@ -147,9 +149,21 @@ class GroupService {
     return group;
   }
 
+  // グループから脱退する。オーナー移譲を含む処理はSupabase RPCで一括実行する。
+  Future<void> leaveGroup(String groupId) async {
+    if (supabase.auth.currentUser == null) {
+      throw Exception('ログインしていません');
+    }
+
+    await supabase.rpc('leave_group', params: {'target_group_id': groupId});
+  }
+
   Future<Group> fetchGroup(String groupId) async {
-    final json =
-        await supabase.from('groups').select().eq('id', groupId).maybeSingle();
+    final json = await supabase
+        .from('groups')
+        .select()
+        .eq('id', groupId)
+        .maybeSingle();
     if (json == null) {
       throw Exception('グループが見つかりません');
     }
@@ -172,7 +186,8 @@ class GroupService {
     final rows = await supabase
         .from('post_shares')
         .select(
-            'created_at, posts!inner(id, user_id, video_url, needs_flip, platform, created_at, users(name))')
+          'created_at, posts!inner(id, user_id, video_url, needs_flip, platform, created_at, users(name))',
+        )
         .eq('group_id', args.groupId)
         .eq('shared_date', args.sharedDate)
         .eq('shared_hour', args.hour)
@@ -198,21 +213,22 @@ final groupServiceProvider = Provider<GroupService>((ref) => GroupService());
 
 // グループ基本情報を取得するProvider。
 // autoDispose: 画面を開くたびに最新を取得する（古いキャッシュを残さない）。
-final groupProvider =
-    FutureProvider.autoDispose.family<Group, String>((ref, groupId) {
+final groupProvider = FutureProvider.autoDispose.family<Group, String>((
+  ref,
+  groupId,
+) {
   return ref.read(groupServiceProvider).fetchGroup(groupId);
 });
 
 // グループのメンバー一覧を取得するProvider。
-final groupMembersProvider =
-    FutureProvider.autoDispose.family<List<AppUser>, String>((ref, groupId) {
-  return ref.read(groupServiceProvider).fetchMembers(groupId);
-});
+final groupMembersProvider = FutureProvider.autoDispose
+    .family<List<AppUser>, String>((ref, groupId) {
+      return ref.read(groupServiceProvider).fetchMembers(groupId);
+    });
 
 // 指定した日付・時間帯のグループ投稿一覧を取得するProvider。
 // autoDispose にすることで、送信後に開き直すと投稿が反映される。
-final groupPostsProvider =
-    FutureProvider.autoDispose.family<List<GroupPost>, GroupPostsArgs>(
-        (ref, args) {
-  return ref.read(groupServiceProvider).fetchPosts(args);
-});
+final groupPostsProvider = FutureProvider.autoDispose
+    .family<List<GroupPost>, GroupPostsArgs>((ref, args) {
+      return ref.read(groupServiceProvider).fetchPosts(args);
+    });
