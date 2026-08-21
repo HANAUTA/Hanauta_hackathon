@@ -77,6 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     return Scaffold(
+      backgroundColor: const Color(0xFFE3F2FD), // 淡い青
       appBar: AppBar(title: Text(_isSignUp ? '新規登録' : 'ログイン')),
       body: Center(
         child: SingleChildScrollView(
@@ -185,12 +186,13 @@ class _LoginHeader extends StatelessWidget {
         Text(
           'Hanalog',
           style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.5,
           ),
         ),
         const SizedBox(height: 4),
         Text(
-          'グループで動画を共有しよう',
+          'グループで動画を共有しよう!',
           style: theme.textTheme.bodyMedium
               ?.copyWith(color: theme.colorScheme.outline),
         ),
