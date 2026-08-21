@@ -453,13 +453,20 @@ class _EmptyMemberCard extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Center(
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 12,
+            bottom: 48,
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.hourglass_empty, size: 32, color: Colors.grey[400]),
-                const SizedBox(height: 8),
-                Text('まだ投稿していません', style: TextStyle(color: Colors.grey[500])),
+                const _BouncingSmiley(size: 40),
+                const SizedBox(height: 6),
+                Text(
+                  'まだ投稿していません',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -467,6 +474,61 @@ class _EmptyMemberCard extends StatelessWidget {
           _TimeOverlay(label: slotLabel, dark: false),
         ],
       ),
+    );
+  }
+}
+
+// 縦にバウンドしながら拡大縮小するニコちゃんアニメーション。
+class _BouncingSmiley extends StatefulWidget {
+  const _BouncingSmiley({this.size = 40});
+
+  final double size;
+
+  @override
+  State<_BouncingSmiley> createState() => _BouncingSmileyState();
+}
+
+class _BouncingSmileyState extends State<_BouncingSmiley>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _bounce;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+
+    _bounce = Tween<double>(
+      begin: 0,
+      end: -10,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: 1.12,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _bounce.value),
+          child: Transform.scale(scale: _scale.value, child: child),
+        );
+      },
+      child: Text('😊', style: TextStyle(fontSize: widget.size)),
     );
   }
 }
