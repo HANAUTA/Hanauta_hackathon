@@ -147,6 +147,26 @@ class GroupService {
     return group;
   }
 
+  // 参加中のグループから脱退する。自分の group_members の行を削除する。
+  // オーナーも一般メンバーと同じ扱いで抜けられる（owner_id は参照しない）。
+  Future<void> leaveGroup(String groupId) async {
+    final userId = _currentUserId;
+
+    // RLSのDELETEポリシーが無い場合はエラーにならず0行削除になるため、
+    // select() で実際に削除された行を確認する。
+    final deleted = await supabase
+        .from('group_members')
+        .delete()
+        .eq('group_id', groupId)
+        .eq('user_id', userId)
+        .select();
+    if (deleted.isEmpty) {
+      throw Exception('参加情報が見つかりませんでした');
+    }
+    // ⚠️ 計測用イベント。この行だけを削除しないこと（leaveGroup機能ごと消すのはOK）
+    Analytics.log('group_left', {'group_id': groupId});
+  }
+
   Future<Group> fetchGroup(String groupId) async {
     final json =
         await supabase.from('groups').select().eq('id', groupId).maybeSingle();

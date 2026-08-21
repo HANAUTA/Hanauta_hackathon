@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../core/analytics.dart';
@@ -11,6 +12,7 @@ import '../../core/cached_video.dart';
 import '../../core/jst.dart';
 import '../../models/app_user.dart';
 import '../../models/group.dart';
+import '../home/home_provider.dart';
 import '../post/recorded_video_view.dart';
 import 'group_provider.dart';
 
@@ -244,12 +246,62 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                     );
                   },
                 ),
+                const Divider(height: 24),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
+                    'グループを脱退',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    _confirmLeave();
+                  },
+                ),
               ],
             ),
           ),
         );
       },
     );
+  }
+
+  // 脱退の確認ダイアログを出し、承諾されたら脱退してホームへ戻る。
+  Future<void> _confirmLeave() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('グループを脱退しますか？'),
+        content: const Text('脱退すると、このグループの投稿は見られなくなります。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('脱退する', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await ref.read(groupServiceProvider).leaveGroup(widget.groupId);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('脱退に失敗しました: $e')));
+      return;
+    }
+    if (!mounted) return;
+
+    // ホーム画面はスタックに残ったままなので、明示的に一覧を作り直す。
+    ref.invalidate(myGroupsProvider);
+    context.go('/home');
   }
 
   Widget _memberTile(AppUser member) {
