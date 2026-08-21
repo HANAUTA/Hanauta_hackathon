@@ -5,14 +5,14 @@ class Group {
     required this.id,
     required this.name,
     required this.inviteCode,
-    required this.ownerId,
+    required this.ownerId, //GroupDetailScreenの削除ボタンを「グループのオーナーだけに表示する」ための判定に使う
     required this.createdAt,
   });
 
   final String id;
   final String name;
   final String inviteCode;
-  final String ownerId;
+  final String ownerId; //削除ボタン
   final DateTime createdAt;
 
   factory Group.fromJson(Map<String, dynamic> json) {
@@ -20,7 +20,7 @@ class Group {
       id: json['id'] as String,
       name: json['name'] as String,
       inviteCode: json['invite_code'] as String,
-      ownerId: json['owner_id'] as String,
+      ownerId: json['owner_id'] as String, //削除ボタン
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }

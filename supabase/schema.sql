@@ -134,6 +134,10 @@ create policy "groups_insert_owner" on public.groups
   for insert with check (auth.uid() = owner_id);
 create policy "groups_update_owner" on public.groups
   for update using (auth.uid() = owner_id);
+-- ▼▼▼ 追加: グループ削除機能のためのDELETEポリシー（オーナーのみ削除可） ▼▼▼
+create policy "groups_delete_owner" on public.groups
+  for delete using (auth.uid() = owner_id);
+-- ▲▲▲ 追加ここまで ▲▲▲
 
 -- group_members: ログインユーザーは読める / 参加・退出は自分の行のみ
 create policy "group_members_select_all" on public.group_members
