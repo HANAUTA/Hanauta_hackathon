@@ -456,13 +456,12 @@ class _EmptyMemberCard extends StatelessWidget {
           Positioned(
             left: 0,
             right: 0,
-            top: 12,
-            bottom: 48,
+            bottom: 12,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const _BouncingSmiley(size: 40),
-                const SizedBox(height: 6),
+                const _BouncingSmiley(size: 36),
+                const SizedBox(height: 4),
                 Text(
                   'まだ投稿していません',
                   style: TextStyle(color: Colors.grey[500], fontSize: 12),
