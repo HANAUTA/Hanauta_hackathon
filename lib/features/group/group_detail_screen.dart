@@ -13,6 +13,8 @@ import '../../models/app_user.dart';
 import '../../models/group.dart';
 import '../post/recorded_video_view.dart';
 import 'group_provider.dart';
+import '../../core/supabase_client.dart';
+import 'package:go_router/go_router.dart';//削除機能のためのimport
 
 // メンバー頭文字アバターの色。
 const _avatarColors = [
@@ -203,54 +205,166 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     );
   }
 
-  void _showInfoSheet(Group? group) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (group != null) ...[
-                  Text('招待コード', style: Theme.of(context).textTheme.labelLarge),
-                  const SizedBox(height: 4),
-                  SelectableText(
-                    group.inviteCode,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.headlineSmall?.copyWith(letterSpacing: 2),
+void _showInfoSheet(Group? group) {
+  final myId = supabase.auth.currentUser?.id;
+  final isOwner = group != null && group.ownerId == myId;
+
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    builder: (sheetContext) {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (group != null) ...[
+                Text('招待コード', style: Theme.of(context).textTheme.labelLarge),
+                const SizedBox(height: 4),
+                SelectableText(
+                  group.inviteCode,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.headlineSmall?.copyWith(letterSpacing: 2),
+                ),
+                const Divider(height: 24),
+              ],
+              Text('メンバー', style: Theme.of(context).textTheme.labelLarge),
+              const SizedBox(height: 8),
+              Consumer(
+                builder: (context, ref, _) {
+                  final membersAsync = ref.watch(
+                    groupMembersProvider(widget.groupId),
+                  );
+                  return membersAsync.when(
+                    data: (members) =>
+                        Column(children: members.map(_memberTile).toList()),
+                    loading: () => const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: CircularProgressIndicator(),
+                    ),
+                    error: (e, _) => Text('メンバー取得エラー: $e'),
+                  );
+                },
+              ),
+              if (isOwner) ...[
+                const Divider(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                    ),
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('グループを削除'),
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      _confirmDelete(group!);
+                    },
                   ),
-                  const Divider(height: 24),
-                ],
-                Text('メンバー', style: Theme.of(context).textTheme.labelLarge),
-                const SizedBox(height: 8),
-                Consumer(
-                  builder: (context, ref, _) {
-                    final membersAsync = ref.watch(
-                      groupMembersProvider(widget.groupId),
-                    );
-                    return membersAsync.when(
-                      data: (members) =>
-                          Column(children: members.map(_memberTile).toList()),
-                      loading: () => const Padding(
-                        padding: EdgeInsets.all(8),
-                        child: CircularProgressIndicator(),
-                      ),
-                      error: (e, _) => Text('メンバー取得エラー: $e'),
-                    );
-                  },
+                ),
+              ] else if (group != null) ...[
+                const Divider(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                    ),
+                    icon: const Icon(Icons.logout),
+                    label: const Text('グループから脱退'),
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      _confirmLeave(group);
+                    },
+                  ),
                 ),
               ],
-            ),
+            ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
+
+// 削除確認ダイアログ。誤タップ防止のため一段挟む。
+void _confirmDelete(Group group) {
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('グループを削除しますか？'),
+      content: Text('「${group.name}」を削除すると、投稿や参加履歴も含めて元に戻せません。'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          child: const Text('キャンセル'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          onPressed: () async {
+            Navigator.pop(dialogContext);
+            try {
+              await ref.read(groupServiceProvider).deleteGroup(widget.groupId);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('グループを削除しました')),
+              );
+              context.go('/home');
+            } catch (e) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('削除に失敗しました: $e')),
+              );
+            }
+          },
+          child: const Text('削除する'),
+        ),
+      ],
+    ),
+  );
+}
+
+// 脱退確認ダイアログ。
+void _confirmLeave(Group group) {
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('グループから脱退しますか？'),
+      content: Text('「${group.name}」から脱退すると、再参加するには招待コードが必要です。'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          child: const Text('キャンセル'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          onPressed: () async {
+            Navigator.pop(dialogContext);
+            try {
+              await ref.read(groupServiceProvider).leaveGroup(widget.groupId);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('グループから脱退しました')),
+              );
+              context.go('/home');
+            } catch (e) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('脱退に失敗しました: $e')),
+              );
+            }
+          },
+          child: const Text('脱退する'),
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _memberTile(AppUser member) {
     return ListTile(
@@ -424,7 +538,7 @@ class _CardFrame extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: Container(
           decoration: BoxDecoration(
-            color: filled ? Colors.black : Colors.grey[200],
+            color: filled ? Colors.black : Colors.blueGrey[200],
             border: filled
                 ? null
                 : Border.all(color: Colors.grey.shade300, width: 1.5),

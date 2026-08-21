@@ -192,6 +192,34 @@ class GroupService {
       );
     }).toList();
   }
+
+    // グループを削除する（オーナーのみ実行可能。DB側のCASCADE設定でmembers/postsも削除される想定）。
+  Future<void> deleteGroup(String groupId) async {
+    final userId = _currentUserId;
+    final group = await fetchGroup(groupId);
+    if (group.ownerId != userId) {
+      throw Exception('削除できるのはグループのオーナーのみです');
+    }
+    await supabase.from('groups').delete().eq('id', groupId);
+    // ⚠️ 計測用イベント。この行だけを削除しないこと(deleteGroup機能ごと消すのはOK)
+    Analytics.log('group_deleted', {'group_id': groupId});
+  }
+  
+  // 参加中のグループから脱退する（オーナーは脱退不可。先にグループ削除 or オーナー移譲が必要）。
+  Future<void> leaveGroup(String groupId) async {
+    final userId = _currentUserId;
+    final group = await fetchGroup(groupId);
+    if (group.ownerId == userId) {
+      throw Exception('オーナーは脱退できません。グループを削除してください');
+    }
+    await supabase
+        .from('group_members')
+        .delete()
+        .eq('group_id', groupId)
+        .eq('user_id', userId);
+    // ⚠️ 計測用イベント。この行だけを削除しないこと(leaveGroup機能ごと消すのはOK)
+    Analytics.log('group_left', {'group_id': groupId});
+  }
 }
 
 final groupServiceProvider = Provider<GroupService>((ref) => GroupService());
